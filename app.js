@@ -1,4 +1,5 @@
-const profileDataArgs = process.argv.slice(2);
+const profileDataArgs = process.argv.slice(2, process.argv.length);
+const [name, github] = profileDataArgs;
 
 /*const printProfileData = profileDataArr => {
   // This...
@@ -19,5 +20,5 @@ const generatePage = (userName, githubName) => {
     Name: ${userName}
     Github: ${githubName}
     `;
-    console.log(generatePage);
 };
+console.log(generatePage(name, github));
