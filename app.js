@@ -1,15 +1,15 @@
 const inquirer = require('inquirer');
-/*const fs = require('fs');
+const fs = require('fs');
 const generatePage = require('./src/page-template');
 
-const pageHTML = generatePage(name, github);
+//const pageHTML = generatePage(name, github);
 
-fs.writeFile('./index.html', pageHTML, err => {
-  if (err) throw err;
+//fs.writeFile('./index.html', pageHTML, err => {
+// if (err) throw err;
 
-  console.log('Portfolio complete! Check out index.html to see the output!');
-});
-*/
+//  console.log('Portfolio complete! Check out index.html to see the output!');
+//});
+
 const promptUser = () => {
   return inquirer.prompt([
     {
@@ -27,10 +27,10 @@ const promptUser = () => {
     },
     {
       type: 'input',
-      name: 'GitHub  username',
+      name: 'github',
       message: 'Enter your GitHub Username? (Required)',
-      validate: nameInput => {
-        if (nameInput) {
+      validate: githubInput => {
+        if (githubInput) {
           return true;
         } else {
           console.log('Please enter GitHub username!');
@@ -42,34 +42,28 @@ const promptUser = () => {
       type: 'confirm',
       name: 'confirmAbout',
       message: 'Would you like to enter some information about yourself for an "About" section?',
-      default: true 
+      default: true
     },
     {
       type: 'input',
       name: 'about',
       message: 'Provide some information about yourself:',
-      when: ({ confirmAbout }) => {
-        if (confirmAbout) {
-          return true;
-        } else {
-          return false;
-        }
-      }
+      when: ({ confirmAbout }) => confirmAbout
     }
   ]);
 };
 
 const promptProject = portfolioData => {
-  portfolioData.projects = [];
-  // If there's no 'projects' array property, create one
-  if (!portfolioData.projects) {
-    portfolioData.projects = [];
-  }
   console.log(`
   ================
   Add a New Project
   ===============
   `);
+
+  // If there's no 'projects' array property, create one
+  if (!portfolioData.projects) {
+    portfolioData.projects = [];
+  }
   return inquirer.prompt([
     {
       type: 'input',
@@ -86,13 +80,13 @@ const promptProject = portfolioData => {
     },
     {
       type: 'input',
-      name: ' Project description',
+      name: 'description',
       message: 'Provide a desciption of the project (Required)',
-      validate: nameInput => {
-        if (nameInput) {
+      validate: descriptionInput => {
+        if (descriptionInput) {
           return true;
         } else {
-          console.log('Please enter a description!');
+          console.log('Please enter a project description!');
           return false;
         }
       }
@@ -105,10 +99,10 @@ const promptProject = portfolioData => {
     },
     {
       type: 'input',
-      name: 'Project GitHub link',
+      name: 'link',
       message: 'Enter the Github link to your project. (Required)',
-      validate: nameInput => {
-        if (nameInput) {
+      validate: linkInput => {
+        if (linkInput) {
           return true;
         } else {
           console.log('Please enter Project GitHub link!');
@@ -128,20 +122,25 @@ const promptProject = portfolioData => {
       message: 'Would you like to enter another project?',
       default: false
     }
-  ]);
+  ])
+    .then(projectData => {
+      portfolioData.projects.push(projectData);
+      if (projectData.confirmAddProject) {
+        return promptProject(portfolioData);
+      } else {
+        return portfolioData;
+      }
+    });
 };
 
 promptUser()
-.then(promptProject)
-.then(portfolioData => {
-  console.log(portfolioData);
-})
-.then(projectAnswers => console.log(projectAnswers))
-.then(projectData => {
-  portfolioData.projects.push(projectData);
-  if (projectData.confirmAddProject) {
-    return promptProject(portfolioData);
-  } else {
-    return portfolioData
-  }
-});
+  .then(promptProject)
+  .then(portfolioData => {
+    const pageHTML = generatePage(portfolioData);
+
+     fs.writeFile('./index.html', pageHTML, err => {
+     if (err) throw err;
+
+    //  console.log('Portfolio complete! Check out index.html to see the output!');
+    });
+  });
